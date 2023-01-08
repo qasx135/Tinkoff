@@ -8,7 +8,6 @@ def io_parser():
     parser.add_argument('indir', type=str, help='Input file dir')
     parser.add_argument('outdir', type=str, help='Output file dir')
     args = parser.parse_args()
-    return args.indir, args.outdir
 
 
 def read_file(file):
