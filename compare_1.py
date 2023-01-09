@@ -87,47 +87,47 @@ class Normalize(ast.NodeTransformer):
         return node
 
 
-def processed_prog_text(text):
+def PPT(text):
     tree = ast.parse(text)
     tree = ast.fix_missing_locations(Normalize().visit(tree))
     processed_text = ast.unparse(tree)
     return processed_text
 
 
-def levenstein_distance(text1, text2):
+def LevDist(text1, text2):
     a, b = len(text1), len(text2)
     if a > b:
         text1, text2 = text2, text1
         a, b = b, a
 
-    cur_row = range(a + 1)
+    curr = range(a + 1)
     for i in range(1, b + 1):
-        prev_row = cur_row
-        cur_row = [i] + [0] * a
+        prevr = curr
+        curr = [i] + [0] * a
 
         for j in range(1, a + 1):
-            add = prev_row[j] + 1
-            delete = cur_row[j - 1] + 1
-            change = prev_row[j - 1]
+            add = prevr[j] + 1
+            delete = curr[j - 1] + 1
+            change = prevr[j - 1]
 
             if text1[j - 1] != text2[i - 1]:
                 change += 1
 
-            cur_row[j] = min(add, delete, change)
+            curr[j] = min(add, delete, change)
 
-    return cur_row[a]
+    return curr[a]
 
 
-def damerau_levenshtein_distance(text1, text2):
+def DamLevDist(text1, text2):
     len1 = len(text1)
     len2 = len(text2)
-    dist = [[0 for i in range(len2 + 1)] for j in range(len1 + 1)]
+    distance = [[0 for i in range(len2 + 1)] for j in range(len1 + 1)]
 
     for i in range(len1 + 1):
-        dist[i][0] = i
+        distance[i][0] = i
 
     for j in range(len2 + 1):
-        dist[0][j] = j
+        distance[0][j] = j
 
     for i in range(1, len1 + 1):
         for j in range(1, len2 + 1):
@@ -137,18 +137,18 @@ def damerau_levenshtein_distance(text1, text2):
             else:
                 cost = 1
 
-            dist[i][j] = min(
-                dist[i - 1][j] + 1, 
-                dist[i][j - 1] + 1,  
-                dist[i - 1][j - 1] + cost,  
+            distance[i][j] = min(
+                distance[i - 1][j] + 1, 
+                distance[i][j - 1] + 1,  
+                distance[i - 1][j - 1] + cost,  
             )
 
             if i - 1 and j - 1 and text1[i - 1] == text2[j - 2] and text1[i - 2] == text2[j - 1]:
-                dist[i][j] = min(dist[i][j], dist[i - 2][j - 2] + 1)
+                distance[i][j] = min(distance[i][j], distance[i - 2][j - 2] + 1)
 
-    for i in dist:
+    for i in distance:
         print(i)
-    return dist[-1][-1]
+    return distance[-1][-1]
 
 
 def run():
@@ -161,12 +161,12 @@ def run():
         print(a.inp_orig)
 
         try:
-            a.orig = processed_prog_text(a.orig)
-            a.plag = processed_prog_text(a.plag)
+            a.orig = PPT(a.orig)
+            a.plag = PPT(a.plag)
         except SyntaxError:
             pass
 
-        diff = levenstein_distance(a.orig, a.plag)    
+        diff = LevDist(a.orig, a.plag)    
         mlen = len(max(a.orig, a.plag))
         if mlen == 0:
             result = 1.0
