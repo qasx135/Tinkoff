@@ -10,19 +10,19 @@ def io_parser():
     return args.indir, args.outdir
 
 
-def read_file(file):
+def readf(file):
     with open(file, 'r', errors='replace') as f:
         text = f.read()
     return text
 
 
-def read_file_line(file):
+def read_stroka(file):
     with open(file, 'r') as f:
         orig, plag = f.readline().split()
     return orig, plag
 
 
-def write_in_file(file, value):
+def writeInFile(file, value):
     with open(file, 'a') as f:
         f.write(str(value))
 
@@ -36,9 +36,9 @@ class FileManager:
         self._cur_plag_text = None
 
     def next_text(self):
-        self.inp_orig, self.inp_plag = read_file_line(self.input_file)
-        self._cur_orig_text = read_file(self.inp_orig)
-        self._cur_plag_text = read_file(self.inp_plag)
+        self.inp_orig, self.inp_plag = read_stroka(self.input_file)
+        self._cur_orig_text = readf(self.inp_orig)
+        self._cur_plag_text = readf(self.inp_plag)
 
     @property
     def orig(self):
@@ -69,7 +69,7 @@ class Visitor(ast.NodeVisitor):
             self.list.add(node.id)
 
 
-class Normalize(ast.NodeTransformer):   # troubles
+class Normalize(ast.NodeTransformer):  
     """
         def visit_Name(self, node):
         if True:    # change if
@@ -80,7 +80,7 @@ class Normalize(ast.NodeTransformer):   # troubles
             )
     """
 
-    def visit_FunctionDef(self, node):  # deletes annotations
+    def visit_FunctionDef(self, node):  
         for i in node.args.args:
             if i.annotation is not None:
                 i.annotation = None
@@ -138,13 +138,13 @@ def damerau_levenshtein_distance(text1, text2):
                 cost = 1
 
             dist[i][j] = min(
-                dist[i - 1][j] + 1,  # delete
-                dist[i][j - 1] + 1,  # add
-                dist[i - 1][j - 1] + cost,  # change
+                dist[i - 1][j] + 1, 
+                dist[i][j - 1] + 1,  
+                dist[i - 1][j - 1] + cost,  
             )
 
             if i - 1 and j - 1 and text1[i - 1] == text2[j - 2] and text1[i - 2] == text2[j - 1]:
-                dist[i][j] = min(dist[i][j], dist[i - 2][j - 2] + 1)  # transpose
+                dist[i][j] = min(dist[i][j], dist[i - 2][j - 2] + 1)
 
     for i in dist:
         print(i)
@@ -156,8 +156,8 @@ def run():
 
     for line in open(a.input_file, 'r'):
         a.inp_orig, a.inp_plag = line.split()
-        a.orig = read_file(a.inp_orig)
-        a.plag = read_file(a.inp_plag)
+        a.orig = readf(a.inp_orig)
+        a.plag = readf(a.inp_plag)
         print(a.inp_orig)
 
         try:
@@ -166,15 +166,15 @@ def run():
         except SyntaxError:
             pass
 
-        diff = levenstein_distance(a.orig, a.plag)    # may be damerau_levenstein_distance
+        diff = levenstein_distance(a.orig, a.plag)    
         mlen = len(max(a.orig, a.plag))
         if mlen == 0:
             result = 1.0
-            write_in_file(a.output_file, result)
+            writeInFile(a.output_file, result)
             continue
 
         result = round((mlen - diff) / mlen, 4)
-        write_in_file(a.output_file, result)
+        writeInFile(a.output_file, result)
 
 
 run()
